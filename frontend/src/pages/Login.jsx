@@ -15,16 +15,18 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = state === "login" ? "/api/user/login" : "/api/user/register";
+    const url = state === "login" ? "/login" : "/signup";
     try {
       const { data } = await axios.post(url, { name, email, password });
-      if (data.success) {
+      console.log("data", data);
+      console.log("token", `Bearer ${data.token}`);
+      if (data) {
         console.log("data", data);
-        setToken(data.token);
-        localStorage.setItem("token", data.token);
+        setToken(`Bearer ${data.token}`);
+        localStorage.setItem("token", `Bearer ${data.token}`);
         navigate("/");
       } else {
-        toast.error(data.message);
+        toast.error(data);
       }
     } catch (error) {
       toast.error(error.message);
@@ -94,7 +96,7 @@ const Login = () => {
         </p>
       ) : (
         <p>
-          Create an account?{" "}
+          Create an account{" "}
           <span
             onClick={() => setState("register")}
             className="text-purple-700 cursor-pointer"

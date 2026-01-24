@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
@@ -9,25 +9,23 @@ export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const backendUrl = import.meta.env.VITE_SERVER_URL;
   axios.defaults.baseURL = backendUrl;
 
   const fetchUser = async () => {
     try {
+      console.log("abc");
       const { data } = await axios.get("/protected", {
         headers: { Authorization: token },
       });
-      if (data.success) {
+      if (data) {
         setUser(data.user);
       } else {
         toast.error(data);
       }
     } catch (error) {
       toast.error(error);
-    } finally {
-      setLoadingUser(false);
     }
   };
 
@@ -53,8 +51,8 @@ export const AppContextProvider = ({ children }) => {
         headers: { Authorization: token },
       });
       console.log("data2", data);
-      if (data.success) {
-        setMessages(data.messages);
+      if (data) {
+        setMessages(data);
       }
     } catch (error) {
       toast.error(`error ${error}`);
@@ -83,12 +81,10 @@ export const AppContextProvider = ({ children }) => {
     messages,
     setMessages,
     createNewMessage,
-    loadingUser,
     fetchUserMessages,
     token,
     setToken,
     axios,
-    setLoadingUser,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

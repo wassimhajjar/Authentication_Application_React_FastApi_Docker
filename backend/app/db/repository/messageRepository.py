@@ -28,14 +28,24 @@ class MessageRepository(BaseRepository):
         self.session.commit()
         self.session.refresh(instance=newMessage)
         
-        return newMessage
+        aiMessage=MessageInCreate(role="ai",content="response")
+        # airesponse.role="ai"
+        # airesponse.content="response"
+        airesponse=Message(**aiMessage.model_dump(exclude_none=True))
+        airesponse.timestamps=datetime.datetime.now()
+        airesponse.user_id=user_id
+        self.session.add(instance=airesponse)
+        self.session.commit()
+        self.session.refresh(instance=airesponse)
+        
+        return airesponse
     
     def get_messages_by_userid(self,user_id,token)->List[Message]:
         payload=AuthHandler.decode_jwt(token=token)
         id=payload["user_id"]
         if user_id==id:
             messages=self.session.query(Message).filter_by(user_id=user_id)
-            return {"messages":messages}
+            return messages
         else:
             raise HTTPException(status_code=404,detail="Not found")
             

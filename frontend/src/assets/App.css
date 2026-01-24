@@ -45,14 +45,14 @@ h1 {
   line-height: 1.5;
 }
 
-.user {
+.human {
   background-color: #007bff;
   color: white;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
-.bot,
+.ai,
 .error {
   background-color: #e9e9eb;
   color: #333;

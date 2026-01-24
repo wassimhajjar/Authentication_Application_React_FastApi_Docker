@@ -1,88 +1,33 @@
-// src/App.jsx
-import React, { useState, useEffect } from "react";
-import "./App.css";
+import React from "react";
+import { Route, Routes } from "react-router-dom";
+import ChatBox from "./pages/ChatBox";
+import { useAppContext } from "./context/AppContext";
+import Login from "./pages/Login";
+import { Toaster } from "react-hot-toast";
 
-function App() {
-  const [userInput, setUserInput] = useState("");
-  const [chatLog, setChatLog] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  // Effect to load chat history from local storage when the app starts
-  useEffect(() => {
-    const storedChatLog = localStorage.getItem("chatLog");
-    if (storedChatLog) {
-      setChatLog(JSON.parse(storedChatLog));
-    }
-  }, []);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    if (!userInput.trim()) return; // Don't send empty messages
-
-    const userMessage = { type: "user", text: userInput };
-    const newChatLog = [...chatLog, userMessage];
-    setChatLog(newChatLog);
-    setUserInput("");
-    setLoading(true);
-
-    try {
-      // The API call to our FastAPI backend
-      const response = await fetch("http://localhost:8000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_message: userInput }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const botMessage = { type: "bot", text: data.bot_response };
-
-      // Update the chat log with the bot's response
-      const finalChatLog = [...newChatLog, botMessage];
-      setChatLog(finalChatLog);
-
-      // Save the updated chat log to local storage for persistence
-      localStorage.setItem("chatLog", JSON.stringify(finalChatLog));
-    } catch (error) {
-      console.error("Error fetching chat response:", error);
-      const errorMessage = {
-        type: "error",
-        text: "Sorry, something went wrong. Please try again.",
-      };
-      setChatLog((prev) => [...prev, errorMessage]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const App = () => {
+  const { user } = useAppContext();
+  // console.log("user", user);
   return (
-    <div className="App">
-      <h1>Medical Chatbot</h1>
-      <div className="chat-window">
-        {chatLog.map((message, index) => (
-          <div key={index} className={`message ${message.type}`}>
-            {message.text}
+    <>
+      <Toaster />
+      {user ? (
+        <>
+          <div className="dark:bg-linear-to-b from-[#242124] to-[#000000] dark:text-white">
+            <div className="h-screen">
+              <Routes>
+                <Route path="/" element={<ChatBox />} />
+              </Routes>
+            </div>
           </div>
-        ))}
-        {loading && <div className="message bot">Loading...</div>}
-      </div>
-      <form onSubmit={handleSubmit} className="chat-form">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Type your message..."
-          disabled={loading}
-        />
-        <button type="submit" disabled={loading}>
-          Send
-        </button>
-      </form>
-    </div>
+        </>
+      ) : (
+        <div className="bg-linear-to-b from-[#242124] to-[#000000] flex items-center justify-center h-screen w-screen">
+          <Login />
+        </div>
+      )}
+    </>
   );
-}
+};
 
 export default App;
